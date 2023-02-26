@@ -1,40 +1,85 @@
 
 
 def appendPhonebook(file):
-	firstname = input("Введите имя абонента: ").lower()
-	surname = input("Введите фамилию абонента: ").lower()
+	name = input("Введите ФИО абонента: ").lower()
 	phone = int(input("Введите номер: "))
-	with open(file,'a') as data:
-		data.write(f"Caller: {firstname} {surname}.  Phone: {phone}")
+	listName = name.split()
+	while len(listName) <= 3:
+		listName.append("")
+	idCaller = getIdCaller(file)
+	with open(file, 'a') as data:
+		data.write(f"{idCaller};{listName[0]};{listName[1]};{listName[2]};{phone}")
 		data.write('\n')
 
-def serching(element, file):
+def getIdCaller(file):
+	return sum(1 for line in open(file))
+
+def searching(element, file):
+	listResult = []
 	with open(file) as data:
 		for line in data:
 			if element in line:
-				print(line, end='')
-				return True
-	return False
-		print("Абонент не найден")
-
+				listResult.append(line.split(";"))
+	return listResult
 
 def searchCaller(file):
 	word = input("Введите строку поиска: ").lower()
-	find = False
-	with open(file) as data:
-		for line in data:
-			if word in line:
-				print(line, end='')
-				find = True
-	if not find:
+	searchResult = searching(word, file)
+	if len(searchResult) > 0:
+		for i in searchResult:
+			print(fomatListForUser(i))
+	else:
 		print()
 		print("Абонент не найден")
 
 def openBook(file):
 	with open(file) as data:
 		for line in data:
-				print(line, end='')
+			listLine = line.split(";")
+			print(fomatListForUser(listLine))
 
+def fomatListForUser(list):
+	return f"Caller: {list[1]} {list[2]} {list[3]} Phone:{list[4]}".replace("\n", "")
+
+def deleteElement(file):
+	word = input("Введите строку поиска: ").lower()
+	searchResult = searching(word, file)
+	with open(file) as data:
+		oldData = data.read()
+	for i in searchResult:
+		print(fomatListForUser(i))
+	if len(searchResult) > 1:
+		print("Найдено больше одного абонента. Введите нужный номер")
+		editLine = searchResult[int(input()) - 1]
+	else:
+		editLine = searchResult[0]
+	newData = oldData.replace(";".join(editLine), "")
+	with open(file, 'w') as f:
+		f.write(newData)
+
+def editBook(file):
+	word = input("Введите строку поиска: ").lower()
+	searchResult = searching(word, file)
+	with open(file) as data:
+		oldData = data.read()
+	for i in searchResult:
+		print(fomatListForUser(i))
+	if len(searchResult) > 1:
+		print("Найдено больше одного абонента. Введите нужный номер")
+		editLine = searchResult[int(input())-1]
+	else:
+		editLine = searchResult[0]
+	print("Выберите пункты для редактирования")
+	print("1 - Фамилия")
+	print("2 - Имя")
+	print("3 - Отчество")
+	print("4 - Телефон")
+	_idParam = int(input())
+	newEditline = editLine.copy()
+	newEditline[_idParam] = input()
+	newData = oldData.replace(";".join(editLine), ";".join(newEditline))
+	with open(file, 'w') as f:
+		f.write(newData)
 def passBook(file):
 	with open(file, 'wb'):
 		pass
@@ -49,7 +94,8 @@ def menu():
 	print("3 - открыть справочник")
 	print("4 - редактировать данные абонента")
 	print("5 - удалить данные абонента")
-	print("6 - выход")
+	print("6 - очистить справочник")
+	print("7 - выход")
 
 
 
@@ -65,10 +111,12 @@ def main():
 		elif result == 3:
 			openBook(file)
 		elif result == 4:
-			passBook(file)
+			editBook(file)
 		elif result == 5:
-			passBook(file)
+			deleteElement(file)
 		elif result == 6:
+			passBook(file)
+		elif result == 7:
 			exit()
 
 
